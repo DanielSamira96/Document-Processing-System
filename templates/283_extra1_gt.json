@@ -1,0 +1,49 @@
+{
+  "lastName": "Samira",
+  "firstName": "Daniel",
+  "idNumber": "316164417",
+  "gender": "Male",
+  "dateOfBirth": {
+    "day": "08",
+    "month": "11",
+    "year": "1996"
+  },
+  "address": {
+    "street": "Anilevich",
+    "houseNumber": "17",
+    "entrance": "",
+    "apartment": "",
+    "city": "Rehovot",
+    "postalCode": "7640306",
+    "poBox": ""
+  },
+  "landlinePhone": "089469585",
+  "mobilePhone": "0528698919",
+  "jobType": "Gym",
+  "dateOfInjury": {
+    "day": "18",
+    "month": "05",
+    "year": "2010"
+  },
+  "timeOfInjury": "16:00",
+  "accidentLocation": "ת. דרכים בדרך לעבודה/מהעבודה",
+  "accidentAddress": "Herzel 7, Rehovot",
+  "accidentDescription": "I got into a minor car accident on my way to the gym",
+  "injuredBodyPart": "Right arm",
+  "signature": "Daniel Samira",
+  "formFillingDate": {
+    "day": "01",
+    "month": "10",
+    "year": "2010"
+  },
+  "formReceiptDateAtClinic": {
+    "day": "15",
+    "month": "10",
+    "year": "2010"
+  },
+  "medicalInstitutionFields": {
+    "healthFundMember": "כללית",
+    "natureOfAccident": "",
+    "medicalDiagnoses": ""
+  }
+}

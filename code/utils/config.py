@@ -12,6 +12,8 @@ class Config:
         self.azure_openai_key = os.getenv("AZURE_OPENAI_KEY")
         self.azure_openai_deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o")
         self.azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01")
+        self.azure_openai_max_tokens = int(os.getenv("AZURE_OPENAI_MAX_TOKENS", "2000"))
+        self.azure_openai_temperature = float(os.getenv("AZURE_OPENAI_TEMPERATURE", "0.1"))
         
         # All implemented languages with their display names
         self.implemented_languages = {
