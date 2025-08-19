@@ -81,90 +81,261 @@ class DocumentProcessorUI:
     def get_text(self, key):
         return UI_TEXTS.get(key, {}).get(self.language, UI_TEXTS.get(key, {}).get("en", ""))
     
+    def get_columns_rtl(self, sizes):
+        """Helper method to handle RTL column creation with reversed sizes
+        sizes: list of sizes for st.columns()
+        Returns: list of column objects in correct order for RTL/LTR
+        """
+        if self.language == "he":
+            # For RTL: reverse the sizes and create columns
+            reversed_sizes = list(reversed(sizes))
+            cols = st.columns(reversed_sizes)
+            # Return columns in reverse order so assignment works correctly
+            return list(reversed(cols))
+        else:
+            # For LTR: normal order
+            return list(st.columns(sizes))
+    
     def render_main_interface(self):
         if self.language == "he":
             st.markdown("""
             <style>
-            .main-header {
+            /* Main container RTL */
+            .main .block-container {
                 direction: rtl;
                 text-align: right;
             }
-            .stSelectbox > label {
+            
+            /* Selectbox and form elements */
+            .stSelectbox > label, .stFileUploader > label {
                 direction: rtl;
                 text-align: right;
             }
+            
+            /* More specific selectors for titles and headers */
+            .main h1, .main h2, .main h3, .main h4, .main h5, .main h6,
+            [data-testid="stTitle"], 
+            [data-testid="stSubheader"], 
+            [data-testid="stHeader"],
+            .stTitle, .stSubheader, .stHeader,
+            div[data-testid="metric-container"] .metric-container,
+            .element-container h1, .element-container h2, .element-container h3 {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            
+            /* Buttons */
+            .stButton > button {
+                direction: rtl;
+                text-align: center;
+            }
+            
+            /* Spinner text */
+            .stSpinner > div {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            /* Captions and help text */
+            .caption, .help {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            /* Columns container */
+            .row-widget {
+                direction: rtl;
+            }
+            
+            /* st.write content - more comprehensive selectors */
+            .stWrite, [data-testid="stWrite"],
+            .stMarkdown, [data-testid="stMarkdown"],
+            [data-testid="stMarkdownContainer"],
+            .element-container .stMarkdown,
+            div[data-testid="element-container"] .stMarkdown {
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            
+            /* Success, error, warning, info messages */
+            .stAlert {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            /* Metrics */
+            .metric-container {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            /* Expander */
+            .streamlit-expanderHeader {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            /* Download button */
+            .stDownloadButton > button {
+                direction: rtl;
+                text-align: center;
+            }
+            
+            /* JSON display */
+            .stJson {
+                direction: ltr; /* Keep JSON in LTR for readability */
+                text-align: left;
+            }
+            
             </style>
             """, unsafe_allow_html=True)
         
         st.title(self.get_text("title"))
         st.subheader(self.get_text("subtitle"))
         
-        uploaded_file = st.file_uploader(
-            self.get_text("upload_label"),
-            type=['pdf', 'jpg', 'jpeg', 'png'],
-            key="file_uploader",
-            accept_multiple_files=False
-        )
+        # Create two columns layout - reverse order for RTL languages
+        controls_col, preview_col = self.get_columns_rtl([1, 1])
         
-        if uploaded_file is not None:
-            st.success(f"📁 {uploaded_file.name}")
+        with controls_col:
+            st.subheader(self.get_text("file_upload_controls"))
             
-            if st.button(self.get_text("process_button"), type="primary"):
-                if not self.ocr_service:
-                    st.error(self.get_text("error_config"))
-                    return
-                
-                if not self.openai_service:
-                    st.error(self.get_text("error_openai_config"))
-                    return
-                
-                try:
-                    with st.spinner(self.get_text("processing")):
-                        temp_file_path = self._save_uploaded_file(uploaded_file)
-                        
-                        if self.file_validator.validate_file(temp_file_path):
-                            # Step 1: OCR Processing
-                            ocr_result = self.ocr_service.analyze_document(temp_file_path)
-                            ocr_text_result = self.ocr_service.convert_result_to_text(ocr_result)
+            uploaded_file = st.file_uploader(
+                self.get_text("upload_label"),
+                type=['pdf', 'jpg', 'jpeg', 'png'],
+                key="file_uploader",
+                accept_multiple_files=False
+            )
+            
+            # Store uploaded file in session state to persist across language changes
+            if uploaded_file is not None:
+                st.session_state['uploaded_file'] = uploaded_file
+            
+            # Use file from session state if available
+            current_file = st.session_state.get('uploaded_file', uploaded_file)
+            
+            # Create columns for button and spinner (always visible)
+            btn_col, spinner_col = self.get_columns_rtl([0.2, 0.8])
+            
+            with btn_col:
+                process_clicked = st.button(self.get_text("process_button"), type="primary")
+            
+            if process_clicked:
+                with spinner_col:
+                    if current_file is None:
+                        st.warning(self.get_text("error_file"))
+                    elif not self.ocr_service:
+                        st.error(self.get_text("error_config"))
+                    elif not self.openai_service:
+                        st.error(self.get_text("error_openai_config"))
+                    else:
+                        try:
+                            with st.spinner(self.get_text("processing")):
+                                temp_file_path = self._save_uploaded_file(current_file)
+                                
+                                if self.file_validator.validate_file(temp_file_path):
+                                    # Step 1: OCR Processing
+                                    ocr_result = self.ocr_service.analyze_document(temp_file_path)
+                                    ocr_text_result = self.ocr_service.convert_result_to_text(ocr_result)
+                                    
+                                    # Save OCR output
+                                    ocr_output_filename = f"{Path(current_file.name).stem}_ocr_output.txt"
+                                    ocr_output_path = os.path.join("outputs", ocr_output_filename)
+                                    os.makedirs("outputs", exist_ok=True)
+                                    self.ocr_service.save_ocr_output(ocr_text_result, ocr_output_path)
                             
-                            # Save OCR output
-                            ocr_output_filename = f"{Path(uploaded_file.name).stem}_ocr_output.txt"
-                            ocr_output_path = os.path.join("outputs", ocr_output_filename)
-                            os.makedirs("outputs", exist_ok=True)
-                            self.ocr_service.save_ocr_output(ocr_text_result, ocr_output_path)
-                    
-                    # Step 2: Text Preprocessing
-                    preprocessed_text = self.text_preprocessor.preprocess_text(ocr_text_result)
-                    
-                    # Step 3: LLM Field Extraction
-                    with st.spinner(self.get_text("llm_processing")):
-                        detected_language = self.openai_service.detect_language(preprocessed_text)
-                        extracted_data = self.openai_service.extract_fields(preprocessed_text, detected_language)
-                        
-                        if extracted_data:
-                            # Store in session state for validation
-                            st.session_state['extracted_data'] = extracted_data
-                            st.session_state['detected_language'] = detected_language
+                            # Step 2: Text Preprocessing
+                            preprocessed_text = self.text_preprocessor.preprocess_text(ocr_text_result)
                             
-                            # Save extracted JSON
-                            json_output_filename = f"{Path(uploaded_file.name).stem}_extracted.json"
-                            json_output_path = os.path.join("outputs", json_output_filename)
-                            self.openai_service.save_extracted_data(extracted_data, json_output_path)
+                            # Step 3: LLM Field Extraction
+                            with st.spinner(self.get_text("llm_processing")):
+                                detected_language = self.openai_service.detect_language(preprocessed_text)
+                                extracted_data = self.openai_service.extract_fields(preprocessed_text, detected_language)
+                                
+                                if extracted_data:
+                                    # Store in session state for validation
+                                    st.session_state['extracted_data'] = extracted_data
+                                    st.session_state['detected_language'] = detected_language
+                                    
+                                    # Save extracted JSON
+                                    json_output_filename = f"{Path(current_file.name).stem}_extracted.json"
+                                    json_output_path = os.path.join("outputs", json_output_filename)
+                                    self.openai_service.save_extracted_data(extracted_data, json_output_path)
+                                    
+                                    st.success(self.get_text("llm_success"))
+                                    st.info(f"{self.get_text('language_detected')}: {self.get_text(detected_language)}")
+                                    
+                                    # JSON will be displayed persistently in the run() method
+                                else:
+                                    st.error("Failed to extract fields from document")
+                                
+                                os.unlink(temp_file_path)
                             
-                            st.success(self.get_text("llm_success"))
-                            st.info(f"{self.get_text('language_detected')}: {detected_language.upper()}")
-                            
-                            # JSON will be displayed persistently in the run() method
-                        else:
-                            st.error("Failed to extract fields from document")
-                        
-                        os.unlink(temp_file_path)
-                        
-                except Exception as e:
-                    st.error(f"Error: {str(e)}")
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+        
+        with preview_col:
+            st.subheader(self.get_text("file_preview"))
+            
+            # Use the same current_file logic for preview
+            current_file = st.session_state.get('uploaded_file', uploaded_file)
+            
+            if current_file is not None:
+                self._display_file_preview(current_file)
+            else:
+                st.info(self.get_text("upload_file_preview"))
+    
+    def _display_file_preview(self, uploaded_file):
+        """Display preview of uploaded file (PDF or image)"""
+        file_type = uploaded_file.type
+        
+        if file_type == "application/pdf":
+            self._display_pdf_preview(uploaded_file)
+        elif file_type in ["image/jpeg", "image/jpg", "image/png"]:
+            self._display_image_preview(uploaded_file)
         else:
-            if st.button(self.get_text("process_button"), type="primary"):
-                st.warning(self.get_text("error_file"))
+            st.warning("Preview not available for this file type")
+    
+    def _display_pdf_preview(self, uploaded_file):
+        """Display PDF preview using base64 embedding"""
+        try:
+            import base64
+            
+            # Read PDF bytes
+            pdf_bytes = uploaded_file.getvalue()
+            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+            
+            # Display PDF in embedded viewer
+            pdf_display = f"""
+            <iframe
+                src="data:application/pdf;base64,{base64_pdf}"
+                width="100%"
+                height="500"
+                type="application/pdf"
+                style="border: 1px solid #e1e5e9; border-radius: 0.5rem;">
+            </iframe>
+            """
+            
+            st.markdown(pdf_display, unsafe_allow_html=True)
+            
+            # Show file info
+            st.caption(f"📄 {uploaded_file.name} ({uploaded_file.size:,} bytes)")
+            
+        except Exception as e:
+            st.error(f"Error displaying PDF preview: {str(e)}")
+            st.info("PDF preview not available, but file can still be processed.")
+    
+    def _display_image_preview(self, uploaded_file):
+        """Display image preview"""
+        try:
+            # Display image
+            st.image(uploaded_file, caption=uploaded_file.name, use_column_width=True)
+            
+            # Show file info
+            st.caption(f"🖼️ {uploaded_file.name} ({uploaded_file.size:,} bytes)")
+            
+        except Exception as e:
+            st.error(f"Error displaying image preview: {str(e)}")
+            st.info("Image preview not available, but file can still be processed.")
     
     def _save_uploaded_file(self, uploaded_file):
         temp_dir = "temp"
@@ -181,13 +352,10 @@ class DocumentProcessorUI:
         st.divider()
         st.header(self.get_text("validation_title"))
         
-        st.info("""
-        **How to validate:** Upload your ground truth JSON file and start validation to compare system output with expected results. 
-        You can download empty templates if needed to create the correct JSON structure.
-        """)
+        st.info(self.get_text("validation_instructions"))
         
         # Reorganized validation buttons
-        col1, col2 = st.columns([1, 1])
+        col1, col2 = self.get_columns_rtl([1, 1])
         
         with col1:
             # st.write("**Upload Ground Truth:**")
@@ -201,7 +369,7 @@ class DocumentProcessorUI:
         with col2:
             st.write(self.get_text("templates_validator"))
             # Download templates side by side - very close together
-            subcol1, subcol2, _ = st.columns([0.4, 0.4, 0.2])
+            subcol1, subcol2, _ = self.get_columns_rtl([0.4, 0.4, 0.2])
             with subcol1:
                 # Download empty English template
                 with open("templates/empty_json_en.json", "r", encoding="utf-8") as f:
@@ -227,7 +395,7 @@ class DocumentProcessorUI:
                 )
             
             # Validation button and spinner side by side
-            btn_col, spinner_col = st.columns([0.2, 0.8])
+            btn_col, spinner_col = self.get_columns_rtl([0.2, 0.8])
             with btn_col:
                 if st.button(self.get_text("start_validation"), type="primary", use_container_width=True):
                     with spinner_col:
@@ -286,13 +454,13 @@ class DocumentProcessorUI:
     
     def _display_validation_results(self, metrics, llm_evaluation):
         """Display validation results and metrics"""
-        st.subheader("📊 Validation Results")
+        st.subheader(self.get_text("validation_results"))
         
         # Full width layout for results and AI analysis
-        results_col, analysis_col = st.columns([1, 1])
+        results_col, analysis_col = self.get_columns_rtl([1, 1])
         
         with results_col:
-            st.subheader("📈 Metrics & Scores")
+            st.subheader(self.get_text("metrics_scores"))
             
             # Overall score from LLM
             overall_score = llm_evaluation.get("overall_score", {})
@@ -301,57 +469,57 @@ class DocumentProcessorUI:
             if text_rating != "N/A":
                 text_rating = text_rating.capitalize()
             
-            col1, col2 = st.columns(2)
+            col1, col2 = self.get_columns_rtl([1, 1])
             with col1:
-                st.metric("LLM Overall Rating", text_rating)
+                st.metric(self.get_text("llm_overall_rating"), text_rating)
             with col2:
-                st.metric("LLM Numeric Score", f"{overall_score.get('numeric_score', 0)}%")
+                st.metric(self.get_text("llm_numeric_score"), f"{overall_score.get('numeric_score', 0)}%")
             
             # Detailed metrics
             st.metric(
                 self.get_text("overall_accuracy"),
                 f"{metrics.overall_accuracy:.1f}%",
-                help="Percentage of exactly matching fields"
+                help=self.get_text("help_overall_accuracy")
             )
             
-            col1, col2 = st.columns(2)
+            col1, col2 = self.get_columns_rtl([1, 1])
             with col1:
                 st.metric(
                     self.get_text("language_consistency"),
                     "✅" if metrics.language_consistency else "❌",
-                    help="Whether output language matches expected language"
+                    help=self.get_text("help_language_consistency")
                 )
                 st.metric(
                     self.get_text("dates_accuracy"),
                     f"{metrics.dates_accuracy:.1f}%",
-                    help="Accuracy in recognizing date fields"
+                    help=self.get_text("help_dates_accuracy")
                 )
                 st.metric(
                     self.get_text("checkboxes_accuracy"),
                     f"{metrics.checkbox_accuracy:.1f}%",
-                    help="Accuracy in identifying selected checkboxes"
+                    help=self.get_text("help_checkboxes_accuracy")
                 )
                 
             with col2:
                 st.metric(
                     self.get_text("phones_accuracy"),
                     f"{metrics.phone_accuracy:.1f}%",
-                    help="Accuracy in extracting phone numbers"
+                    help=self.get_text("help_phones_accuracy")
                 )
                 st.metric(
                     self.get_text("empty_fields"),
                     f"{metrics.empty_fields_accuracy:.1f}%",
-                    help="Accuracy in recognizing empty fields"
+                    help=self.get_text("help_empty_fields")
                 )
                 st.metric(
                     self.get_text("structure_compliance"),
                     f"{metrics.structure_compliance:.1f}%",
-                    help="Compliance with expected JSON structure"
+                    help=self.get_text("help_structure_compliance")
                 )
         
         with analysis_col:
             # LLM Analysis
-            st.subheader("🤖 AI Analysis")
+            st.subheader(self.get_text("ai_analysis_title"))
             if "category_analysis" in llm_evaluation:
                 analysis = llm_evaluation["category_analysis"]
                 
@@ -360,10 +528,10 @@ class DocumentProcessorUI:
             
             # Summary and recommendations
             if "summary" in llm_evaluation:
-                st.write(f"**📝 Summary:** {llm_evaluation['summary']}")
+                st.write(f"**{self.get_text('summary_label')}** {llm_evaluation['summary']}")
             
             if "improvement_focus" in llm_evaluation:
-                st.write("**🎯 Improvement Focus:**")
+                st.write(f"**{self.get_text('improvement_focus_label')}**")
                 # Split improvement points by numbered items
                 improvement_text = llm_evaluation["improvement_focus"]
                 
@@ -380,10 +548,10 @@ class DocumentProcessorUI:
                     st.write(str(improvement_text))
             
             if "critical_mistakes" in llm_evaluation:
-                st.write(f"**⚠️ Critical Issues:** {llm_evaluation['critical_mistakes']}")
+                st.write(f"**{self.get_text('critical_issues_label')}** {llm_evaluation['critical_mistakes']}")
             
             if "system_strengths" in llm_evaluation:
-                st.write(f"**✅ System Strengths:** {llm_evaluation['system_strengths']}")
+                st.write(f"**{self.get_text('system_strengths_label')}** {llm_evaluation['system_strengths']}")
     
     def run(self):
         self.setup_page_config()
@@ -393,7 +561,7 @@ class DocumentProcessorUI:
         # Always show extracted JSON if we have data in session state
         if 'extracted_data' in st.session_state and st.session_state.extracted_data:
             # Display JSON result section
-            with st.expander("Extracted Fields (JSON)", expanded=True):
+            with st.expander(self.get_text("extracted_fields_json"), expanded=True):
                 st.json(st.session_state.extracted_data)
             
             # Download button for JSON

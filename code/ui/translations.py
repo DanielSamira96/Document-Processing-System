@@ -17,7 +17,7 @@ UI_TEXTS = {
     },
     "processing": {
         "en": "Processing...",
-        "he": "מעבד..."
+        "he": "מעבד ..."
     },
     "success": {
         "en": "Processing completed successfully!",
@@ -158,5 +158,89 @@ UI_TEXTS = {
     "he": {
         "en": "Hebrew", 
         "he": "עברית"
+    },
+    "file_upload_controls": {
+        "en": "📂 File Upload & Controls",
+        "he": "📂 העלאת קבצים ובקרה"
+    },
+    "file_preview": {
+        "en": "👁️ File Preview",
+        "he": "👁️ תצוגה מקדימה"
+    },
+    "validation_results": {
+        "en": "📊 Validation Results",
+        "he": "📊 תוצאות אימות"
+    },
+    "metrics_scores": {
+        "en": "📈 Metrics & Scores",
+        "he": "📈 מדדים וציונים"
+    },
+    "llm_overall_rating": {
+        "en": "LLM Overall Rating",
+        "he": "דירוג כללי של LLM"
+    },
+    "llm_numeric_score": {
+        "en": "LLM Numeric Score",
+        "he": "ציון מספרי של LLM"
+    },
+    "help_overall_accuracy": {
+        "en": "Percentage of exactly matching fields",
+        "he": "אחוז השדות התואמים בדיוק"
+    },
+    "help_language_consistency": {
+        "en": "Whether output language matches expected language",
+        "he": "האם שפת הפלט תואמת לשפה הצפויה"
+    },
+    "help_dates_accuracy": {
+        "en": "Accuracy in recognizing date fields",
+        "he": "דיוק בזיהוי שדות תאריך"
+    },
+    "help_checkboxes_accuracy": {
+        "en": "Accuracy in identifying selected checkboxes",
+        "he": "דיוק בזיהוי תיבות סימון נבחרות"
+    },
+    "help_phones_accuracy": {
+        "en": "Accuracy in extracting phone numbers",
+        "he": "דיוק בחילוץ מספרי טלפון"
+    },
+    "help_empty_fields": {
+        "en": "Accuracy in recognizing empty fields",
+        "he": "דיוק בזיהוי שדות ריקים"
+    },
+    "help_structure_compliance": {
+        "en": "Compliance with expected JSON structure",
+        "he": "תאימות למבנה JSON הצפוי"
+    },
+    "upload_file_preview": {
+        "en": "Upload a file to see preview here",
+        "he": "העלה קובץ כדי לראות תצוגה מקדימה כאן"
+    },
+    "validation_instructions": {
+        "en": "**How to validate:** Upload your ground truth JSON file and start validation to compare system output with expected results. You can download empty templates if needed to create the correct JSON structure.",
+        "he": "**כיצד לאמת:** העלה את קובץ ה-JSON של נתוני האמת והתחל אימות כדי להשוות את פלט המערכת עם התוצאות הצפויות. ניתן להוריד תבניות ריקות במידת הצורך ליצירת מבנה JSON נכון."
+    },
+    "extracted_fields_json": {
+        "en": "Extracted Fields (JSON)",
+        "he": "שדות מחולצים (JSON)"
+    },
+    "ai_analysis_title": {
+        "en": "🤖 AI Analysis",
+        "he": "🤖 ניתוח AI"
+    },
+    "summary_label": {
+        "en": "📝 Summary:",
+        "he": "📝 סיכום:"
+    },
+    "improvement_focus_label": {
+        "en": "🎯 Improvement Focus:",
+        "he": "🎯 מוקדי שיפור:"
+    },
+    "critical_issues_label": {
+        "en": "⚠️ Critical Issues:",
+        "he": "⚠️ בעיות קריטיות:"
+    },
+    "system_strengths_label": {
+        "en": "✅ System Strengths:",
+        "he": "✅ חוזקות המערכת:"
     }
 }
