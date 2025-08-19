@@ -81,120 +81,50 @@ class DocumentProcessorUI:
     def get_text(self, key):
         return UI_TEXTS.get(key, {}).get(self.language, UI_TEXTS.get(key, {}).get("en", ""))
     
-    def get_columns_rtl(self, sizes):
-        """Helper method to handle RTL column creation with reversed sizes
-        sizes: list of sizes for st.columns()
-        Returns: list of column objects in correct order for RTL/LTR
-        """
-        if self.language == "he":
-            # For RTL: reverse the sizes and create columns
-            reversed_sizes = list(reversed(sizes))
-            cols = st.columns(reversed_sizes)
-            # Return columns in reverse order so assignment works correctly
-            return list(reversed(cols))
-        else:
-            # For LTR: normal order
-            return list(st.columns(sizes))
     
     def render_main_interface(self):
         if self.language == "he":
             st.markdown("""
             <style>
-            /* Main container RTL */
-            .main .block-container {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            /* Selectbox and form elements */
-            .stSelectbox > label, .stFileUploader > label {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            /* More specific selectors for titles and headers */
-            .main h1, .main h2, .main h3, .main h4, .main h5, .main h6,
-            [data-testid="stTitle"], 
-            [data-testid="stSubheader"], 
-            [data-testid="stHeader"],
-            .stTitle, .stSubheader, .stHeader,
-            div[data-testid="metric-container"] .metric-container,
-            .element-container h1, .element-container h2, .element-container h3 {
+            /* Simple RTL for everything */
+            html, body, [class*="css"] {
                 direction: rtl !important;
                 text-align: right !important;
             }
             
-            /* Buttons */
-            .stButton > button {
-                direction: rtl;
-                text-align: center;
-            }
-            
-            /* Spinner text */
-            .stSpinner > div {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            /* Captions and help text */
-            .caption, .help {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            /* Columns container */
-            .row-widget {
-                direction: rtl;
-            }
-            
-            /* st.write content - more comprehensive selectors */
-            .stWrite, [data-testid="stWrite"],
-            .stMarkdown, [data-testid="stMarkdown"],
-            [data-testid="stMarkdownContainer"],
-            .element-container .stMarkdown,
-            div[data-testid="element-container"] .stMarkdown {
-                direction: rtl !important;
-                text-align: right !important;
-            }
-            
-            /* Success, error, warning, info messages */
-            .stAlert {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            /* Metrics */
-            .metric-container {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            /* Expander */
-            .streamlit-expanderHeader {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            /* Download button */
-            .stDownloadButton > button {
-                direction: rtl;
-                text-align: center;
-            }
-            
-            /* JSON display */
+            /* Keep JSON in LTR for readability */
             .stJson {
-                direction: ltr; /* Keep JSON in LTR for readability */
-                text-align: left;
+                direction: ltr !important;
+                text-align: left !important;
             }
             
+            /* Keep buttons centered */
+            .stButton > button, .stDownloadButton > button {
+                text-align: center !important;
+            }
+            
+            /* Keep file uploader and captions in LTR */
+            .stFileUploader, .stFileUploader > div,
+            .stFileUploader section,
+            .stCaption {
+                direction: ltr !important;
+                text-align: left !important;
+            }
+            
+            /* Keep only specific markdown content in LTR (not all markdown) */
+            .stMarkdown pre, .stMarkdown code,
+            .stMarkdown table {
+                direction: ltr !important;
+                text-align: left !important;
+            }
             </style>
             """, unsafe_allow_html=True)
         
         st.title(self.get_text("title"))
         st.subheader(self.get_text("subtitle"))
         
-        # Create two columns layout - reverse order for RTL languages
-        controls_col, preview_col = self.get_columns_rtl([1, 1])
+        # Create two columns layout
+        controls_col, preview_col = st.columns([1, 1])
         
         with controls_col:
             st.subheader(self.get_text("file_upload_controls"))
@@ -214,10 +144,10 @@ class DocumentProcessorUI:
             current_file = st.session_state.get('uploaded_file', uploaded_file)
             
             # Create columns for button and spinner (always visible)
-            btn_col, spinner_col = self.get_columns_rtl([0.2, 0.8])
+            btn_col, spinner_col = st.columns([0.2, 0.8])
             
             with btn_col:
-                process_clicked = st.button(self.get_text("process_button"), type="primary")
+                process_clicked = st.button(self.get_text("process_button"), type="primary", use_container_width=True)
             
             if process_clicked:
                 with spinner_col:
@@ -321,8 +251,8 @@ class DocumentProcessorUI:
             st.caption(f"📄 {uploaded_file.name} ({uploaded_file.size:,} bytes)")
             
         except Exception as e:
-            st.error(f"Error displaying PDF preview: {str(e)}")
-            st.info("PDF preview not available, but file can still be processed.")
+            st.error(f"{self.get_text('error_displaying_pdf')}: {str(e)}")
+            st.info(self.get_text("pdf_preview_not_available"))
     
     def _display_image_preview(self, uploaded_file):
         """Display image preview"""
@@ -334,8 +264,8 @@ class DocumentProcessorUI:
             st.caption(f"🖼️ {uploaded_file.name} ({uploaded_file.size:,} bytes)")
             
         except Exception as e:
-            st.error(f"Error displaying image preview: {str(e)}")
-            st.info("Image preview not available, but file can still be processed.")
+            st.error(f"{self.get_text('error_displaying_image')}: {str(e)}")
+            st.info(self.get_text("image_preview_not_available"))
     
     def _save_uploaded_file(self, uploaded_file):
         temp_dir = "temp"
@@ -355,7 +285,7 @@ class DocumentProcessorUI:
         st.info(self.get_text("validation_instructions"))
         
         # Reorganized validation buttons
-        col1, col2 = self.get_columns_rtl([1, 1])
+        col1, col2 = st.columns([1, 1])
         
         with col1:
             # st.write("**Upload Ground Truth:**")
@@ -369,7 +299,7 @@ class DocumentProcessorUI:
         with col2:
             st.write(self.get_text("templates_validator"))
             # Download templates side by side - very close together
-            subcol1, subcol2, _ = self.get_columns_rtl([0.4, 0.4, 0.2])
+            subcol1, subcol2, _ = st.columns([0.4, 0.4, 0.2])
             with subcol1:
                 # Download empty English template
                 with open("templates/empty_json_en.json", "r", encoding="utf-8") as f:
@@ -395,7 +325,7 @@ class DocumentProcessorUI:
                 )
             
             # Validation button and spinner side by side
-            btn_col, spinner_col = self.get_columns_rtl([0.2, 0.8])
+            btn_col, spinner_col = st.columns([0.2, 0.8])
             with btn_col:
                 if st.button(self.get_text("start_validation"), type="primary", use_container_width=True):
                     with spinner_col:
@@ -457,7 +387,7 @@ class DocumentProcessorUI:
         st.subheader(self.get_text("validation_results"))
         
         # Full width layout for results and AI analysis
-        results_col, analysis_col = self.get_columns_rtl([1, 1])
+        results_col, analysis_col = st.columns([1, 1])
         
         with results_col:
             st.subheader(self.get_text("metrics_scores"))
@@ -469,7 +399,7 @@ class DocumentProcessorUI:
             if text_rating != "N/A":
                 text_rating = text_rating.capitalize()
             
-            col1, col2 = self.get_columns_rtl([1, 1])
+            col1, col2 = st.columns([1, 1])
             with col1:
                 st.metric(self.get_text("llm_overall_rating"), text_rating)
             with col2:
@@ -482,7 +412,7 @@ class DocumentProcessorUI:
                 help=self.get_text("help_overall_accuracy")
             )
             
-            col1, col2 = self.get_columns_rtl([1, 1])
+            col1, col2 = st.columns([1, 1])
             with col1:
                 st.metric(
                     self.get_text("language_consistency"),
@@ -524,7 +454,9 @@ class DocumentProcessorUI:
                 analysis = llm_evaluation["category_analysis"]
                 
                 for category, feedback in analysis.items():
-                    st.write(f"**{category.replace('_', ' ').title()}:** {feedback}")
+                    # Try to get translation, fallback to formatted English
+                    translated_category = self.get_text(category.replace('_', ' ').title()) or category.replace('_', ' ').title()
+                    st.write(f"**{translated_category}:** {feedback}")
             
             # Summary and recommendations
             if "summary" in llm_evaluation:

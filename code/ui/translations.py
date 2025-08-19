@@ -17,7 +17,7 @@ UI_TEXTS = {
     },
     "processing": {
         "en": "Processing...",
-        "he": "מעבד ..."
+        "he": "מעבד..."
     },
     "success": {
         "en": "Processing completed successfully!",
@@ -242,5 +242,41 @@ UI_TEXTS = {
     "system_strengths_label": {
         "en": "✅ System Strengths:",
         "he": "✅ חוזקות המערכת:"
+    },
+    "error_displaying_pdf": {
+        "en": "Error displaying PDF preview",
+        "he": "שגיאה בהצגת תצוגה מקדימה של PDF"
+    },
+    "pdf_preview_not_available": {
+        "en": "PDF preview not available, but file can still be processed.",
+        "he": "תצוגה מקדימה של PDF אינה זמינה, אך הקובץ עדיין יכול להיות מעובד."
+    },
+    "error_displaying_image": {
+        "en": "Error displaying image preview",
+        "he": "שגיאה בהצגת תצוגה מקדימה של תמונה"
+    },
+    "image_preview_not_available": {
+        "en": "Image preview not available, but file can still be processed.",
+        "he": "תצוגה מקדימה של תמונה אינה זמינה, אך הקובץ עדיין יכול להיות מעובד."
+    },
+    "Overall Accuracy": {
+        "en": "Overall Accuracy",
+        "he": "דיוק כללי"
+    },
+    "Dates Accuracy": {
+        "en": "Dates Accuracy",
+        "he": "דיוק תאריכים"
+    },
+    "Phone Accuracy": {
+        "en": "Phone Accuracy", 
+        "he": "דיוק מספרי טלפון"
+    },
+    "Checkbox Accuracy": {
+        "en": "Checkbox Accuracy",
+        "he": "דיוק תיבות סימון"
+    },
+    "Empty Fields": {
+        "en": "Empty Fields",
+        "he": "שדות ריקים"
     }
 }
