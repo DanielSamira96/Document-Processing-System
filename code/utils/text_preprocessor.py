@@ -13,7 +13,7 @@ class TextPreprocessor:
             (r'חתימהx', 'חתימה'),
             (r'xחתימה', 'חתימה'),
             # Add more rules as needed
-            # (r'pattern_to_replace', 'replacement'),
+
         ]
     
     def preprocess_text(self, text: str) -> str:

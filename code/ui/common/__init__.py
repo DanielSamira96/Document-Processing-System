@@ -1,0 +1,1 @@
+from .translations import COMMON_TEXTS

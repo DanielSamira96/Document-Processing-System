@@ -1,0 +1,33 @@
+/* RTL Support for Hebrew Language */
+
+/* Simple RTL for everything */
+html, body, [class*="css"] {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* Keep JSON in LTR for readability */
+.stJson {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* Keep buttons centered */
+.stButton > button, .stDownloadButton > button {
+    text-align: center !important;
+}
+
+/* Keep file uploader and captions in LTR */
+.stFileUploader, .stFileUploader > div,
+.stFileUploader section,
+.stCaption {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* Keep only specific markdown content in LTR (not all markdown) */
+.stMarkdown pre, .stMarkdown code,
+.stMarkdown table {
+    direction: ltr !important;
+    text-align: left !important;
+}

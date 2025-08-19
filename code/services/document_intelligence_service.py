@@ -47,18 +47,6 @@ class DocumentIntelligenceService:
 
             first_page = ocr_result.pages[0]
 
-            # breakpoint()
-            #
-            # # Debug
-            # print("First page content:")
-            # print(first_page)
-            # print("\n")
-            # print("key_value_pairs:")
-            # print(ocr_result.key_value_pairs)
-            # print("\n")
-            # print("raw_lines:")
-            # print(first_page.lines)
-
             key_value_lines = ["--- Key-Value Pairs: ---"]
             # Collect key-value pairs
             key_value_pairs = getattr(ocr_result, "key_value_pairs", [])
