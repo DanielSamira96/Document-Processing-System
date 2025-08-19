@@ -47,6 +47,30 @@ class OpenAIService:
             logger.warning(f"Error detecting language: {str(e)}, defaulting to English")
             return "en"
     
+    def call_openai_api(self, system_prompt: str, user_prompt: str, response_format: str = "json_object") -> Optional[str]:
+        """Generic function to call Azure OpenAI API"""
+        try:
+            # Prepare response format
+            format_param = {"type": response_format} if response_format == "json_object" else None
+            
+            # Call Azure OpenAI
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                response_format=format_param
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error calling OpenAI API: {str(e)}")
+            raise e
+    
     def extract_fields(self, ocr_text: str, language: str = None) -> Optional[Dict[str, Any]]:
         """Extract form fields from OCR text using Azure OpenAI"""
         try:
@@ -62,19 +86,8 @@ class OpenAIService:
             # Create user prompt with OCR content
             user_prompt = f"Extract the form fields from this OCR content:\n\n{ocr_text}"
             
-            # Call Azure OpenAI
-            response = self.client.chat.completions.create(
-                model=self.deployment_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                response_format={"type": "json_object"}  # Force JSON output
-            )
-            
-            result_text = response.choices[0].message.content
+            # Call API using generic function
+            result_text = self.call_openai_api(system_prompt, user_prompt, "json_object")
             
             # Parse the JSON response
             try:
