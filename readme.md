@@ -148,7 +148,7 @@ Document-Processing-System/
 
 1. **Clone the Repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/DanielSamira96/Document-Processing-System.git
    cd Document-Processing-System
    ```
 

@@ -189,7 +189,7 @@ class DocumentExtractorUI:
         """Display image preview"""
         try:
             # Display image
-            st.image(uploaded_file, caption=uploaded_file.name, use_column_width=True)
+            st.image(uploaded_file, caption=uploaded_file.name, use_container_width=True)
             
             # Show file info
             st.caption(f"🖼️ {uploaded_file.name} ({uploaded_file.size:,} bytes)")
